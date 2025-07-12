@@ -4,6 +4,15 @@ const bcrypt = require('bcrypt');
 const User = require('../models/user');
 const transporter = require('../utils/mailer');
 require('dotenv').config();
+const passport = require('passport');
+
+passport.serializeUser((user, done) => {
+done(null, user);
+});
+
+passport.deserializeUser((user, done) => {
+done(null, user);
+});
 
 function generateOTP() {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -73,6 +82,34 @@ router.post('/verify-otp', async (req, res) => {
     }
 
     return res.json({ message: 'OTP verified. Proceed to reset password.' });
+});
+
+
+router.get('/google',
+passport.authenticate('google', {
+scope: ['profile', 'email'],
+})
+);
+
+router.get('/google/callback',
+passport.authenticate('google', { failureRedirect: '/' }),
+(req, res) => {
+    res.send("authenticated")
+}
+);
+
+router.get('/logout', (req, res, next) => {
+  req.logout(function(err) {
+    if (err) { return next(err); }
+    res.send("Logged out");
+  });
+});
+
+router.get('/user', (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Not authenticated' });
+  }
+  res.json({ user: req.user });
 });
 
 module.exports = router;
