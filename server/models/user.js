@@ -25,12 +25,12 @@ const userSchema = new mongoose.Schema({
                 type: String,
                 trim: true,
                 unique: true,
-                sparse: true, // Important: allows null + unique
+                sparse: true,
         },
         googleId: {
                 type: String,
                 unique: true,
-                sparse: true, // allows multiple nulls
+                sparse: true,
         },
         avatar: {
                 type: String,
