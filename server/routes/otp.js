@@ -36,34 +36,34 @@ router.post('/send_otp', async function (req, res) {
     }
 });
 
-router.post('/send_otp/2fa', async function (req, res) {
-    const { email } = req.body;
-    try {
-       const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
+// router.post('/2fa', async function (req, res) {
+//     const { email } = req.body;
+//     try {
+//        const user = await User.findOne({ email });
+//         if (!user) {
+//             return res.status(404).json({ message: "User not found" });
+//         }
 
-        const otp = generateOTP();
-        const expiry = Date.now() + 10 * 60 * 1000;
-        user.resetOtp = otp;
-        user.resetOtpExpiry = expiry;
-        await user.save();
+//         const otp = generateOTP();
+//         const expiry = Date.now() + 10 * 60 * 1000;
+//         user.resetOtp = otp;
+//         user.resetOtpExpiry = expiry;
+//         await user.save();
 
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: '2FA OTP ',
-            text: `Your OTP for 2FA is ${otp}. It is valid for 10 minutes.`
-        };
+//         const mailOptions = {
+//             from: process.env.EMAIL_USER,
+//             to: email,
+//             subject: '2FA OTP ',
+//             text: `Your OTP for 2FA is ${otp}. It is valid for 10 minutes.`
+//         };
 
-        await transporter.sendMail(mailOptions);
-        return res.json({ message: "OTP sent to your email" });
-    } catch (err) {
-        console.error("Error in forgot password:", err);
-        return res.status(500).json({ message: "Internal Server Error" });
-    }
-});
+//         await transporter.sendMail(mailOptions);
+//         return res.json({ message: "OTP sent to your email" });
+//     } catch (err) {
+//         console.error("Error in 2fa:", err);
+//         return res.status(500).json({ message: "Internal Server Error" });
+//     }
+// });
 
 router.post('/verify_otp', async (req, res) => {
     const { email, otp } = req.body;

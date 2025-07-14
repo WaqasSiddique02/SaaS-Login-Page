@@ -6,6 +6,7 @@ var mongoose = require('mongoose');
 require('dotenv').config();
 const passport = require('passport');
 const session = require('express-session');
+const cors = require('cors')
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -13,11 +14,17 @@ var authRouter = require('./routes/auth');
 var otpRouter=require('./routes/otp.js')
 var app = express();
 
+app.use(cors({
+  origin: 'http://localhost:4000',
+  credentials: true
+}))
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.enable('cors')
 
 app.use(
     session({
