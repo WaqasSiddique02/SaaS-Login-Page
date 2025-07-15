@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user");
 require("dotenv").config();
 const passport = require("passport");
-const transporter = require('../utils/mailer');
+const transporter = require("../utils/mailer");
 
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -23,7 +23,9 @@ router.post("/login", async function (req, res) {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
     }
 
     const user = await User.findOne({ email });
@@ -32,14 +34,16 @@ router.post("/login", async function (req, res) {
     }
 
     if (user.googleId) {
-      return res.status(403).json({ 
-        message: "This account was created using Google authentication. Please sign in with Google." 
+      return res.status(403).json({
+        message:
+          "This account was created using Google authentication. Please sign in with Google.",
       });
     }
 
     if (!user.password) {
-      return res.status(403).json({ 
-        message: "No password set for this account. Please use alternative login method." 
+      return res.status(403).json({
+        message:
+          "No password set for this account. Please use alternative login method.",
       });
     }
 
@@ -69,18 +73,16 @@ router.post("/login", async function (req, res) {
   }
 });
 
-router.get(
-  "/google",
+router.get("/google",
   passport.authenticate("google", {
     scope: ["profile", "email"],
   })
 );
 
-router.get(
-  "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/" }),
+router.get("/google/callback",
+  passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
-    res.send("authenticated");
+    res.redirect("http://localhost:5173/");
   }
 );
 
