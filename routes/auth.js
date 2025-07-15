@@ -23,14 +23,24 @@ router.post("/login", async function (req, res) {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
+      return res.status(400).json({ message: "Email and password are required" });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.googleId) {
+      return res.status(403).json({ 
+        message: "This account was created using Google authentication. Please sign in with Google." 
+      });
+    }
+
+    if (!user.password) {
+      return res.status(403).json({ 
+        message: "No password set for this account. Please use alternative login method." 
+      });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);

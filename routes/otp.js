@@ -66,15 +66,59 @@ router.post('/send_otp', async function (req, res) {
 // });
 
 router.post('/verify_otp', async (req, res) => {
-    const { email, otp } = req.body;
+    try {
+        const { email, otp } = req.body;
+        
+        if (!email || !otp) {
+            return res.status(400).json({
+                success: false,
+                error: "MISSING_FIELDS",
+                message: "Email and OTP are required"
+            });
+        }
 
-    const user = await User.findOne({ email });
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                error: "USER_NOT_FOUND",
+                message: "No user found with this email"
+            });
+        }
 
-    if (!user || user.resetOtp !== otp || Date.now() > user.resetOtpExpiry) {
-        return res.status(400).json({ message: 'Invalid or expired OTP' });
+        if (user.resetOtp !== otp) {
+            return res.status(400).json({
+                success: false,
+                error: "INVALID_OTP",
+                message: "The OTP you entered is incorrect"
+            });
+        }
+
+        if (Date.now() > user.resetOtpExpiry) {
+            return res.status(400).json({
+                success: false,
+                error: "EXPIRED_OTP",
+                message: "This OTP has expired"
+            });
+        }
+
+        user.resetOtp = undefined;
+        user.resetOtpExpiry = undefined;
+        await user.save();
+
+        return res.json({
+            success: true,
+            message: "OTP verified successfully"
+        });
+
+    } catch (err) {
+        console.error("Server error:", err);
+        return res.status(500).json({
+            success: false,
+            error: "SERVER_ERROR",
+            message: "An internal server error occurred"
+        });
     }
-
-    return res.json({ message: 'OTP verified. Proceed to further action.' });
 });
 
 module.exports = router;
