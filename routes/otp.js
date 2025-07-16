@@ -72,14 +72,30 @@ router.post('/verify_otp', async (req, res) => {
                 message: "This OTP has expired"
             });
         }
-
         user.resetOtp = undefined;
         user.resetOtpExpiry = undefined;
+        user.isEmailVerified = true;
         await user.save();
 
-        return res.json({
-            success: true,
-            message: "OTP verified successfully"
+        req.login(user, (err) => {
+            if (err) {
+                console.error("Session error:", err);
+                return res.status(500).json({
+                    success: false,
+                    error: "SESSION_ERROR",
+                    message: "Error creating user session"
+                });
+            }
+            
+            return res.json({
+                success: true,
+                message: "OTP verified successfully",
+                user: {
+                    id: user._id,
+                    email: user.email,
+                    name: user.name
+                }
+            });
         });
 
     } catch (err) {

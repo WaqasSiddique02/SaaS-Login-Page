@@ -1,21 +1,29 @@
-var express = require('express');
+var express = require("express");
 var router = express.Router();
-const bcrypt = require('bcrypt');
-const User = require('../models/user');
+const bcrypt = require("bcrypt");
+const User = require("../models/user");
 
-router.post('/register', async function (req, res) {
+router.post("/register", async function (req, res) {
   try {
     const { email, username, password, country, phone } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(409).json({ message: "User already exists with this email" });
+      return res
+        .status(409)
+        .json({ message: "User already exists with this email" });
     }
 
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
 
-    const user = new User({ email, username, password: hashedPassword, country, phone });
+    const user = new User({
+      email,
+      username,
+      password: hashedPassword,
+      country,
+      phone,
+    });
     await user.save();
     return res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
@@ -24,7 +32,7 @@ router.post('/register', async function (req, res) {
   }
 });
 
-router.get('/', async function (req, res) {
+router.get("/", async function (req, res) {
   try {
     const users = await User.find({});
     return res.status(200).json(users);
@@ -34,7 +42,7 @@ router.get('/', async function (req, res) {
   }
 });
 
-router.get('/:email', async function (req, res) {
+router.get("/:email", async function (req, res) {
   try {
     const user = await User.findOne({ email: req.params.email });
     if (!user) {
@@ -47,7 +55,7 @@ router.get('/:email', async function (req, res) {
   }
 });
 
-router.put('/:email', async function (req, res) {
+router.put("/:email", async function (req, res) {
   try {
     const { username, password, country, phone } = req.body;
     const user = await User.findOne({ email: req.params.email });
@@ -66,7 +74,35 @@ router.put('/:email', async function (req, res) {
   }
 });
 
-router.delete('/:email', async function (req, res) {
+router.put("/reset_password/:email", async function (req, res) {
+  try {
+    const { newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters long" });
+    }
+
+    const _email = req.params.email.trim().toLowerCase()
+
+    const user = await User.findOne({ email: _email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    return res.status(200).json({ message: "Password reset successfully" });
+  } catch (err) {
+    console.error("Error resetting password:", err);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+router.delete("/:email", async function (req, res) {
   try {
     const user = await User.findOneAndDelete({ email: req.params.email });
     if (!user) {
