@@ -15,7 +15,7 @@ var otpRouter=require('./routes/otp.js')
 var app = express();
 
 app.use(cors({
-  origin: 'https://saa-s-login-page-front-end.vercel.app/',
+  origin: 'https://saa-s-login-page-front-end.vercel.app',
   credentials: true
 }))
 
