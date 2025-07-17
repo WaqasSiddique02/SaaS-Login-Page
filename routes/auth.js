@@ -82,7 +82,7 @@ router.get("/google",
 router.get("/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
-    res.redirect("http://localhost:5173/");
+    res.redirect("https://saa-s-login-page-front-end.vercel.app/");
   }
 );
 
